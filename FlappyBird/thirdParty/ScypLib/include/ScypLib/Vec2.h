@@ -1,0 +1,182 @@
+#pragma once
+#include <cmath>
+#include <functional>
+#include<cassert>
+
+namespace sl
+{
+    template<typename T>
+    class Vec2
+    {
+    public:
+        Vec2() = default;
+        Vec2(T x, T y)
+            : x(x), y(y) {}
+
+        Vec2(const Vec2& other) = default;
+        Vec2(Vec2&& other) noexcept = default;
+
+        Vec2& operator=(const Vec2& rhs)
+        {
+            if (this != &rhs)
+            {
+                x = rhs.x;
+                y = rhs.y;
+            }
+            return *this;
+        }
+
+        Vec2& operator=(Vec2&& rhs) noexcept
+        {
+            if (this != &rhs)
+            {
+                x = std::move(rhs.x);
+                y = std::move(rhs.y);
+            }
+            return *this;
+        }
+
+        bool operator==(const Vec2& other) const
+        {
+            return x == other.x && y == other.y;
+        }
+
+        bool operator!=(const Vec2& other) const
+        {
+            return !(*this == other);
+        }
+
+        Vec2 operator+(const Vec2& rhs) const
+        {
+            return Vec2(x + rhs.x, y + rhs.y);
+        }
+
+        Vec2& operator+=(const Vec2& rhs)
+        {
+            *this = *this + rhs;
+            return *this;
+        }
+
+        Vec2 operator-(const Vec2& rhs) const
+        {
+            return Vec2(x - rhs.x, y - rhs.y);
+        }
+
+        Vec2& operator-=(const Vec2& rhs)
+        {
+            *this = *this - rhs;
+            return *this;
+        }
+
+        Vec2 operator*(T rhs) const
+        {
+            return Vec2(x * rhs, y * rhs);
+        }
+
+        Vec2& operator*=(T rhs)
+        {
+            *this = *this * rhs;
+            return *this;
+        }
+         
+        Vec2 operator/(T rhs) const
+        {
+            assert(rhs != T(0));
+            return Vec2(x / rhs, y / rhs);
+        }
+
+        Vec2& operator/=(T rhs)
+        {
+            *this = *this / rhs;
+            return *this;
+        }
+
+        Vec2 operator/(Vec2<T> rhs)
+        {
+            assert(rhs.x != T(0) && rhs.y != T(0));
+            return Vec2( x / rhs.x, y / rhs.y );
+        }
+
+        Vec2 operator/=(Vec2<T> rhs)
+        {
+            *this = *this / rhs;
+            return *this;
+        }
+
+        Vec2 Rotate(T radians, Vec2<T> point) const
+        {
+            float cos = std::cos(radians);
+            float sin = std::sin(radians);
+            return { point.x * cos - point.y * sin,
+                     point.x * sin + point.y * cos };
+        }
+
+        T GetLength() const
+        {
+            return (T)std::sqrt(GetLengthSq());
+        }
+
+        T GetLengthSq() const
+        {
+            return x * x + y * y;
+        }
+
+        Vec2& Normalize()
+        {
+            return *this = this->GetNormalized();
+        }
+
+        Vec2 GetNormalized() const
+        {
+            const T len = GetLength();
+            if (len != (T)0)
+                return *this * ((T)1 / len);
+            return *this;
+        }
+
+        T Dot(const Vec2& other) const
+        {
+            return x * other.x + y * other.y;
+        }
+
+        Vec2 Perpendicular() const
+        {
+            return Vec2(-y, x);
+        }
+
+        template<typename U>
+        explicit Vec2(const Vec2<U>& other)
+            : x(static_cast<T>(other.x)), y(static_cast<T>(other.y))
+        {}
+
+        template<typename U>
+        explicit operator Vec2<U>() const
+        {
+            return Vec2<U>(static_cast<U>(x), static_cast<U>(y));
+        }
+
+    public:
+        T x;
+        T y;
+    };
+    using Vec2f = Vec2<float>;
+    using Vec2i = Vec2<int>;
+}
+
+namespace std 
+{
+    template <typename T>
+    struct std::hash<sl::Vec2<T>>
+    {
+        std::size_t operator()(const sl::Vec2<T>& v) const noexcept
+        {
+            const std::size_t hx = std::hash<T>{}(v.x);
+            const std::size_t hy = std::hash<T>{}(v.y);
+
+            std::size_t seed = hx;
+            seed ^= hy + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
+
+            return seed;
+        }
+    };
+}
