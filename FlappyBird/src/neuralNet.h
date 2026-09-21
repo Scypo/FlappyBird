@@ -55,6 +55,10 @@ public:
 		}
 		return input;
 	}
+	const std::vector<std::vector<Neuron>>& GetLayers() const
+	{
+		return layers;
+	}
 	static NeuralNet GetChildNet(const NeuralNet& n1, const NeuralNet& n2)
 	{
 		//resize and assume both parents have same structure

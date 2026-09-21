@@ -4,7 +4,7 @@ import pandas as pd
 file = open("../data/ML_ScoreProgression.txt", "r")
 data = {"Generation": [], "Score": []}
 
-gen = 1
+gen = 0
 for line in file:
     data["Score"].append(float(line.strip()))
     data["Generation"].append(gen)

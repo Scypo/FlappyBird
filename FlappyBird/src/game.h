@@ -68,8 +68,9 @@ private:
 	std::vector<float> GetInput(const FlappyBird& bird, const Pipe& pipe) const;
 private:
 	const size_t birdCount = 100;
-	const size_t inputs = 5;
-	size_t generation = 1;
+	const size_t inputs = 3;
+	size_t generation = 0;
+	size_t eliteBird = 0;
 	std::vector<NeuralNet> nets;
 
 	std::vector<int> scores;

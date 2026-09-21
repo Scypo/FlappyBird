@@ -213,7 +213,7 @@ void TrainingGame::ProcessInput()
 	size_t pipe = 0;
 	for (size_t i = 0; i < pipes.size(); i++)
 	{
-		if (pipes[i].x > 57.0f && pipes[i].x < pipes[pipe].x)
+		if (pipes[i].x + Pipe::gap > 57.0f && pipes[i].x < pipes[pipe].x)
 		{
 			pipe = i;
 		}
@@ -235,7 +235,7 @@ void TrainingGame::Init()
 	birds.resize(birdCount);
 	nets.reserve(birdCount);
 
-	std::vector<size_t> layerSize = { 4, 4, 1 };//TODO load from file
+	std::vector<size_t> layerSize = { 4, 1 };//TODO load from file
 	for (size_t i = 0; i < birdCount; i++)
 	{
 		nets.emplace_back(NeuralNet(inputs, layerSize));
@@ -280,6 +280,8 @@ void TrainingGame::ProcessDeath()
 	if (alive.size() < 2) return;
 	std::uniform_int_distribution<size_t> dist(0, alive.size() - 1);
 
+	eliteBird = alive[dist(rng)];
+
 	for (size_t i = 0; i < birdCount; i++)
 	{
 		if (!birds[i].dead) continue;
@@ -303,12 +305,30 @@ void TrainingGame::SaveData()
 	{
 		data << s << std::endl;
 	}
+	std::ofstream model("data/bestModel.txt");
+	{
+		const std::vector<std::vector<Neuron>>& layers = nets[eliteBird].GetLayers();
+		assert(!layers.empty());
+		model << layers.size() << std::endl; //number of layers
+		for (const std::vector<Neuron>& layer : layers)
+		{
+			model << layer.size() << std::endl; //neurons in layer
+			for (const Neuron& neuron : layer)
+			{
+				model << neuron.weights.size() << std::endl; //number of weights in neuron
+				for (float w : neuron.weights)
+				{
+					model << w << " "; //weight
+				}
+				model << std::endl << neuron.bias << std::endl;//bias
+			}
+		}
+	}
 }
 
 std::vector<float> TrainingGame::GetInput(const FlappyBird& bird, const Pipe& pipe) const
 {
-	//velocity, y pos, xdist pipe, ydist topgap, ydist bottomgap;
-	std::vector<float> v = { bird.velocity, pipe.x - bird.pos.x, bird.pos.y, bird.pos.y - pipe.gapY, pipe.gapY + pipe.gap - bird.pos.y - bird.size.y };
+	std::vector<float> v = { pipe.x - bird.pos.x, bird.pos.y - pipe.gapY, pipe.gapY + pipe.gap - bird.pos.y - bird.size.y };
 	assert(v.size() == inputs);
 	return v;
 }
