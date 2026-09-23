@@ -1,4 +1,4 @@
-#include "game.h"
+#include "Game.h"
 #include<fstream>
 #include<iostream>
 
@@ -71,12 +71,12 @@ void FBGame::HandleCollisions()
 	for (FlappyBird& fb : birds)
 	{
 		if (fb.dead)continue;
-		if (fb.pos.y + fb.size.y > 512.0f - 112.0f)
+		if (fb.pos.y + fb.size.y > 512.0f - 112.0f) //check if hit the ground
 		{
 			fb.dead = true;
 			continue;
 		}
-		for (Pipe& pipe : pipes)
+		for (Pipe& pipe : pipes) //check if hit a pipe
 		{
 			if (fb.pos.x + FlappyBird::size.x > pipe.x && fb.pos.x < pipe.x + Pipe::width && 
 				(fb.pos.y < pipe.gapY || fb.pos.y + FlappyBird::size.y > pipe.gapY + Pipe::gap))
@@ -89,12 +89,11 @@ void FBGame::HandleCollisions()
 
 void FBGame::Restart()
 {
-	for (FlappyBird& fb : birds)
+	for (FlappyBird& fb : birds) //restart birds pos
 	{
-		fb = FlappyBird();
-		
+		fb = FlappyBird();	
 	}
-	for (Pipe& pipe : pipes)
+	for (Pipe& pipe : pipes) //move pipes behind so they can be regenerated
 	{
 		pipe.x = -100;
 	}
@@ -118,7 +117,7 @@ void FBGame::HandlePipes()
 	}
 	for (Pipe& pipe : pipes)
 	{
-		if (pipe.x < -pipe.width)
+		if (pipe.x < -pipe.width) //move pipe outside of screen
 		{
 			MovePipe(pipe, furthestPipe + Pipe::width + 200.0f);
 			furthestPipe = pipe.x;
@@ -130,6 +129,7 @@ void FBGame::Draw()
 {
 	gfx->BeginFrame();
 	gfx->BeginView();
+	//find start position of score sprites
 	int digits = 0;
 	int dummy = currentScore;
 	while (dummy)
@@ -143,22 +143,26 @@ void FBGame::Draw()
 	}
 	float xEnd = 288.0f * 0.5f + digits * 24.0f * 0.5f - 24.0f;
 	dummy = currentScore;
+	//draw score
 	gfx->SetDrawDepth(4.0f);
 	for (int i = 0; i < digits; i++)
 	{
 		gfx->DrawTexture(xEnd - i * 24.0f, 54.0f, numbers[dummy % 10]);
 		dummy /= 10;
 	}
+	//draw birds
 	gfx->SetDrawDepth(3.0f);
 	for (FlappyBird& fb : birds)
 	{
 		fb.Draw(*gfx);
 	}
+	//draw pipes
 	gfx->SetDrawDepth(1.0f);
 	for (Pipe& pipe : pipes)
 	{
 		pipe.Draw(*gfx);
 	}
+	//draw background
 	gfx->SetDrawDepth(0.0f);
 	gfx->DrawTexture(0, 0, background);
 	gfx->SetDrawDepth(2.0f);
@@ -218,6 +222,7 @@ void TrainingGame::ProcessInput()
 			pipe = i;
 		}
 	}
+	//pass data to neural nets and decide if should jump
 	for (size_t i = 0; i < birdCount; i++)
 	{
 		float output = nets[i].Evaluate(GetInput(birds[i], pipes[pipe]))[0];
@@ -257,7 +262,7 @@ bool TrainingGame::ShouldRestart()
 			sum++;
 		}
 	}
-	return sum * 10 > birdCount * 9;
+	return sum * 10 > birdCount * 9; //should restart if 90% of population is dead
 }
 
 void TrainingGame::ProcessDeath()
@@ -293,7 +298,7 @@ void TrainingGame::ProcessDeath()
 		{
 			p2 = dist(rng);
 		}
-		nets[i] = NeuralNet::GetChildNet(nets[alive[p1]], nets[alive[p2]]);
+		nets[i].Evolve(nets[alive[p1]], nets[alive[p2]]);
 	}
 	generation++;
 }
@@ -328,6 +333,7 @@ void TrainingGame::SaveData()
 
 std::vector<float> TrainingGame::GetInput(const FlappyBird& bird, const Pipe& pipe) const
 {
+	//distance from pipe, distance from top of the gap, distance from bottom of the gap
 	std::vector<float> v = { pipe.x - bird.pos.x, bird.pos.y - pipe.gapY, pipe.gapY + pipe.gap - bird.pos.y - bird.size.y };
 	assert(v.size() == inputs);
 	return v;

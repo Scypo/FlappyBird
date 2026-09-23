@@ -15,21 +15,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp">
+    <ClCompile Include="src\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\game.cpp">
+    <ClCompile Include="src\Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\game.h">
+    <ClInclude Include="src\Game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\actors.h">
+    <ClInclude Include="src\Actors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\neuralNet.h">
+    <ClInclude Include="src\NeuralNet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

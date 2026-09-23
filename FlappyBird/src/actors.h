@@ -3,7 +3,7 @@
 #include<ScypLib/Graphics.h>
 struct FlappyBird
 {
-	static inline sl::Vec2f size = { 34.0f, 24.0f };
+	const static inline sl::Vec2f size = { 34.0f, 24.0f };
 	static inline sl::Texture* textures[3] = { nullptr };
 	sl::Vec2f pos = { 57.0f, 244.0f };
 	float velocity = 0.0f;
@@ -32,7 +32,7 @@ struct FlappyBird
 		}
 		else 
 		{
-			pos.x -= 100.0f * dt;
+			pos.x -= 100.0f * dt;//speed of bird
 		}
 		input = false;
 	}
@@ -55,7 +55,7 @@ struct Pipe
 	float gapY = 0.0f;
 	void UpdatePos(float dt)
 	{
-		x -= 100.0f * dt;
+		x -= 100.0f * dt;//speed of bird
 	}
 	void Draw(sl::Graphics& gfx)
 	{

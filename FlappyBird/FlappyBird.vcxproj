@@ -139,13 +139,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\game.cpp" />
-    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Game.cpp" />
+    <ClCompile Include="src\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\actors.h" />
-    <ClInclude Include="src\game.h" />
-    <ClInclude Include="src\neuralNet.h" />
+    <ClInclude Include="src\Actors.h" />
+    <ClInclude Include="src\Game.h" />
+    <ClInclude Include="src\NeuralNet.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
