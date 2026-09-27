@@ -25,7 +25,6 @@ protected:
 	virtual void ProcessInput() = 0;
 	virtual bool ShouldRestart() = 0;
 	virtual void ProcessDeath() = 0;
-	virtual void SaveData() = 0;
 protected:
 	std::unique_ptr<sl::Window> wnd = nullptr;
 	std::unique_ptr<sl::EventDispatcher> ed = nullptr;
@@ -41,6 +40,7 @@ protected:
 	sl::Texture* background = nullptr;
 	sl::Texture* base = nullptr;
 	std::array<sl::Texture*, 10> numbers = { nullptr };
+	float baseX = 0.0f;
 
 	bool autoStart = false;
 	int currentScore = 0;
@@ -54,7 +54,6 @@ private:
 	void Init() override;
 	bool ShouldRestart() override;
 	void ProcessDeath() override {};
-	void SaveData() override {};
 };
 
 class TrainingGame : public FBGame
@@ -64,14 +63,12 @@ private:
 	void Init() override;
 	bool ShouldRestart() override;
 	void ProcessDeath() override;
-	void SaveData() override;
 	std::vector<float> GetInput(const FlappyBird& bird, const Pipe& pipe) const;
 private:
-	const size_t birdCount = 100;
+	size_t birdCount = 100;
 	const size_t inputs = 3;
 	size_t generation = 0;
+	size_t trainingGenCount = 5;
 	size_t eliteBird = 0;
 	std::vector<NeuralNet> nets;
-
-	std::vector<int> scores;
 };

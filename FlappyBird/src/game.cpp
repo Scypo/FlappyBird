@@ -27,7 +27,6 @@ void FBGame::LoadAssets()
 	{
 		numbers[i] = gfx->LoadTexture("assets/sprites/" + std::to_string(i) + ".png");
 	}
-
 }
 
 void FBGame::Run()
@@ -63,7 +62,6 @@ void FBGame::Run()
 			Draw();
 		}
 	}
-	SaveData();
 }
 
 void FBGame::HandleCollisions()
@@ -166,7 +164,8 @@ void FBGame::Draw()
 	gfx->SetDrawDepth(0.0f);
 	gfx->DrawTexture(0, 0, background);
 	gfx->SetDrawDepth(2.0f);
-	gfx->DrawTexture(0, 512.0f - 112.0f, base);
+	gfx->DrawTexture(baseX, 512.0f - 112.0f, base);
+	gfx->DrawTexture(baseX + 336.0f, 512.0f - 112.0f, base);
 	gfx->EndView();
 	gfx->EndFrame();
 }
@@ -182,6 +181,8 @@ void FBGame::Update(float dt)
 	{
 		pipe.UpdatePos(dt);
 	}
+	baseX -= 100.0f * dt;
+	baseX = std::fmod(baseX, 336.0f);
 	HandlePipes();
 }
 
@@ -250,6 +251,11 @@ void TrainingGame::Init()
 	MovePipe(pipes[1], pipes[0].x + Pipe::width + 200.0f);
 	MovePipe(pipes[2], pipes[1].x + Pipe::width + 200.0f);
 	currentScore = 0;
+
+	std::cout << "Enter number of generations:" << std::endl;
+	std::cin >> trainingGenCount;
+	trainingGenCount--;
+	system("cls");
 }
 
 bool TrainingGame::ShouldRestart()
@@ -267,69 +273,52 @@ bool TrainingGame::ShouldRestart()
 
 void TrainingGame::ProcessDeath()
 {
-	scores.push_back(currentScore);
-
 	system("cls");
 	std::cout << "Generation Number: " << generation << std::endl;
 	std::cout << "High Score: " << maxScore << std::endl;
 	std::cout << "Current Score: " << currentScore << std::endl;
 
-	std::vector<size_t> alive;
-	for (size_t i = 0; i < birdCount; i++)
+	if (generation <= trainingGenCount)
 	{
-		if (!birds[i].dead)
+		std::vector<size_t> alive;
+		for (size_t i = 0; i < birdCount; i++)
 		{
-			alive.push_back(i);
+			if (!birds[i].dead)
+			{
+				alive.push_back(i);
+			}
+		}
+		std::uniform_int_distribution<size_t> dist(0, alive.size() - 1);
+
+		eliteBird = alive[dist(rng)];
+		if (alive.size() >= 2 && generation != trainingGenCount)
+		{
+			for (size_t i = 0; i < birdCount; i++)
+			{
+				if (!birds[i].dead) continue;
+
+				size_t p1 = dist(rng);
+				size_t p2 = dist(rng);
+
+				while (p1 == p2)
+				{
+					p2 = dist(rng);
+				}
+				nets[i].Evolve(nets[alive[p1]], nets[alive[p2]]);
+			}
 		}
 	}
-	if (alive.size() < 2) return;
-	std::uniform_int_distribution<size_t> dist(0, alive.size() - 1);
-
-	eliteBird = alive[dist(rng)];
-
-	for (size_t i = 0; i < birdCount; i++)
+	if (generation == trainingGenCount)
 	{
-		if (!birds[i].dead) continue;
-
-		size_t p1 = dist(rng);
-		size_t p2 = dist(rng);
-
-		while (p1 == p2)
-		{
-			p2 = dist(rng);
-		}
-		nets[i].Evolve(nets[alive[p1]], nets[alive[p2]]);
+		std::swap(nets[eliteBird], nets[0]);
+		generation++;
+		birdCount = 1;
+		birds.resize(birdCount);
+		nets.resize(birdCount);
 	}
 	generation++;
 }
 
-void TrainingGame::SaveData()
-{
-	std::ofstream data("data/ML_ScoreProgression.txt");
-	for (int s : scores)
-	{
-		data << s << std::endl;
-	}
-	std::ofstream model("data/bestModel.txt");
-	{
-		const std::vector<std::vector<Neuron>>& layers = nets[eliteBird].GetLayers();
-		assert(!layers.empty());
-		model << layers.size() << std::endl; //number of layers
-		for (const std::vector<Neuron>& layer : layers)
-		{
-			model << layer.size() << std::endl; //neurons in layer
-			for (const Neuron& neuron : layer)
-			{
-				model << neuron.weights.size() << std::endl; //number of weights in neuron
-				for (float w : neuron.weights)
-				{
-					model << w << " "; //weight
-				}
-				model << std::endl << neuron.bias << std::endl;//bias
-			}
-		}
-	}
-}
 
 std::vector<float> TrainingGame::GetInput(const FlappyBird& bird, const Pipe& pipe) const
 {

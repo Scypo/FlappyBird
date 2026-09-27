@@ -7,7 +7,8 @@ int main()
 	while (!quit)
 	{
 		int choice = 0;
-		std::cout << "Select Mode:\n 1)Play Flappy Bird\n 2)Train NeuralNet\n 3)Test NeuralNet\n 4)Quit" << std::endl;
+		system("cls");
+		std::cout << "Select Mode:\n 1)Play Flappy Bird\n 2)Train NeuralNet\n 3)Quit" << std::endl;
 		std::cin >> choice;
 		system("cls");
 		switch (choice)
@@ -25,11 +26,6 @@ int main()
 			break;
 		}
 		case 3:
-		{
-			std::cout << "not implemented" << std::endl;
-			break;
-		}
-		case 4:
 			quit = true;
 			break;
 		default:
